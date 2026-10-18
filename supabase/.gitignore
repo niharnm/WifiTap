@@ -1,0 +1,13 @@
+# Supabase CLI local state
+.branches
+.temp
+
+# Real env files hold secrets (TAG_ENC_KEY). Only the example is tracked.
+.env
+.env.*
+!.env.example
+functions/.env
+functions/.env.*
+
+# Hosted project overrides ([remotes.*] blocks) name a real project ref.
+*.local.toml

@@ -1,0 +1,18 @@
+// Copy to Local.xcconfig (gitignored) and fill in.
+
+DEVELOPMENT_TEAM = ABCDE12345
+BUNDLE_ID_PREFIX = com.yourname
+
+// Domain written to cards: https://<TAG_DOMAIN>/t/<token>
+TAG_DOMAIN = tap.yourdomain.com
+
+// Phase 1b: Supabase project URL and publishable (anon) key.
+// Write URLs as https:/$()/host because "//" starts a comment here.
+// SUPABASE_URL = https:/$()/yourproject.supabase.co
+// SUPABASE_ANON_KEY = your-publishable-key
+
+// Phase 1a: a test network the App Clip joins without a backend (Debug only).
+// Use a guest network; this value is compiled into Debug builds.
+LOCAL_TEST_SSID = Guest
+LOCAL_TEST_PASSWORD = guest-password
+LOCAL_TEST_SECURITY = wpa2

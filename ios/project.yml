@@ -1,0 +1,101 @@
+name: WifiTap
+options:
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+
+targets:
+  WifiTap:
+    type: application
+    platform: iOS
+    sources:
+      - App
+      - Shared
+    dependencies:
+      - target: WifiTapClip
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).WifiTap
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: WifiTap
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NFCReaderUsageDescription: WifiTap writes your Wi-Fi card.
+        TagBaseURL: $(TAG_BASE_URL)
+        SupabaseURL: $(SUPABASE_URL)
+        SupabaseAnonKey: $(SUPABASE_ANON_KEY)
+        LocalTestSSID: $(LOCAL_TEST_SSID)
+        LocalTestPassword: $(LOCAL_TEST_PASSWORD)
+        LocalTestSecurity: $(LOCAL_TEST_SECURITY)
+    entitlements:
+      path: App/WifiTap.entitlements
+      properties:
+        com.apple.developer.nfc.readersession.formats: [NDEF, TAG]
+        com.apple.developer.networking.HotspotConfiguration: true
+        com.apple.developer.associated-domains:
+          - appclips:$(TAG_DOMAIN)
+          - applinks:$(TAG_DOMAIN)
+    scheme:
+      testTargets: [WifiTapTests]
+
+  WifiTapClip:
+    type: application.on-demand-install-capable
+    platform: iOS
+    sources:
+      - Clip
+      - Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).WifiTap.Clip
+    info:
+      path: Clip/Info.plist
+      properties:
+        CFBundleDisplayName: WifiTap
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSAppClip:
+          NSAppClipRequestEphemeralUserNotification: false
+          NSAppClipRequestLocationConfirmation: false
+        TagBaseURL: $(TAG_BASE_URL)
+        SupabaseURL: $(SUPABASE_URL)
+        SupabaseAnonKey: $(SUPABASE_ANON_KEY)
+        LocalTestSSID: $(LOCAL_TEST_SSID)
+        LocalTestPassword: $(LOCAL_TEST_PASSWORD)
+        LocalTestSecurity: $(LOCAL_TEST_SECURITY)
+    entitlements:
+      path: Clip/WifiTapClip.entitlements
+      properties:
+        com.apple.developer.on-demand-install-capable: true
+        com.apple.developer.parent-application-identifiers:
+          - $(AppIdentifierPrefix)$(BUNDLE_ID_PREFIX).WifiTap
+        com.apple.developer.networking.HotspotConfiguration: true
+        com.apple.developer.associated-domains:
+          - appclips:$(TAG_DOMAIN)
+    scheme: {}
+
+  WifiTapTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests
+    dependencies:
+      - target: WifiTap
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).WifiTapTests
+        GENERATE_INFOPLIST_FILE: YES

@@ -1,0 +1,13 @@
+{
+  "appclips": {
+    "apps": ["TEAMID.com.example.WifiTap.Clip"]
+  },
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.example.WifiTap"],
+        "components": [{ "/": "/t/*" }]
+      }
+    ]
+  }
+}

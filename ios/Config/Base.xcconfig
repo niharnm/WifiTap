@@ -1,0 +1,23 @@
+// Shared, non-secret build settings. Copy Local.xcconfig.example to
+// Local.xcconfig to set your team, bundle prefix, domain and test network.
+
+DEVELOPMENT_TEAM =
+BUNDLE_ID_PREFIX = com.example
+TAG_DOMAIN = tap.example.com
+
+// Leave empty to run the Phase 1a local test mode (no backend).
+SUPABASE_URL =
+SUPABASE_ANON_KEY =
+
+LOCAL_TEST_SSID =
+LOCAL_TEST_PASSWORD =
+LOCAL_TEST_SECURITY = wpa2
+
+#include? "Local.xcconfig"
+
+// Test network credentials never ship in Release builds.
+LOCAL_TEST_SSID[config=Release] =
+LOCAL_TEST_PASSWORD[config=Release] =
+
+// "//" starts a comment in xcconfig files, hence the $() break.
+TAG_BASE_URL = https:/$()/$(TAG_DOMAIN)

@@ -1,0 +1,71 @@
+name: Bug report
+description: Something doesn't work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Don't paste real Wi-Fi passwords, card URLs, tokens, or keys. A card URL is enough to read that card's password.
+        For security problems, use the repository's Security tab instead of an issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect to see?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Write an "iPhone + Android" card to an NTAG215
+        2. Tap it with an iPhone that doesn't have WifiTap installed
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      options:
+        - Writing a card (WifiTap app)
+        - Joining from a card on iPhone (App Clip)
+        - Joining from a card on Android
+        - Backend (Supabase functions or database)
+        - Building or setup
+        - Documentation
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Card mode
+      options:
+        - iPhone + Android (url_and_wifi)
+        - Link only (url_only)
+        - Not applicable
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Credential source
+      options:
+        - Local test mode (no backend)
+        - Local Supabase stack
+        - Hosted Supabase project
+        - Not applicable
+  - type: input
+    id: devices
+    attributes:
+      label: Devices and OS versions
+      placeholder: iPhone 15 on iOS 26.1, Pixel 8 on Android 16
+  - type: input
+    id: card
+    attributes:
+      label: Card type
+      placeholder: NTAG215
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Remove passwords, tokens, and network names you don't want public before attaching.
