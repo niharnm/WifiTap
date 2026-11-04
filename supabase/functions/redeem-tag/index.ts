@@ -9,8 +9,29 @@ import { createAdminClient } from "../_shared/supabase.ts";
 type Outcome = "delivered" | "revoked" | "expired" | "rate_limited";
 
 const PLATFORMS = new Set(["ios", "android", "web", "unknown"]);
-const RATE_LIMIT_MAX = 30;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+// Per client (hashed address, per tag) and a generous per-tag ceiling as an abuse backstop.
+const CLIENT_LIMIT_MAX = 30;
+const TAG_LIMIT_MAX = 1000;
+const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
+
+// Supabase's gateway sits behind Cloudflare, which sets cf-connecting-ip itself.
+// X-Forwarded-For can carry client-supplied entries, so it is only a fallback.
+function clientAddress(req: Request): string {
+  const cf = req.headers.get("cf-connecting-ip")?.trim();
+  if (cf) return cf;
+  const real = req.headers.get("x-real-ip")?.trim();
+  if (real) return real;
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwarded || "unknown";
+}
+
+// Salted, tag scoped SHA-256 so raw addresses are never stored or linkable across cards.
+async function clientKey(req: Request, tagId: string): Promise<string> {
+  const salt = Deno.env.get("RATE_LIMIT_SALT") ?? "";
+  const data = new TextEncoder().encode(`${salt}|${tagId}|${clientAddress(req)}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 Deno.serve(async (req) => {
   if (req.method !== "GET") return json(405, { error: "method_not_allowed" });
@@ -33,20 +54,19 @@ Deno.serve(async (req) => {
     if (tagError) throw new Error(`tag lookup failed: ${tagError.code} ${tagError.message}`);
     if (!tag) return json(404, { error: "not_found" });
 
-    // Rate limited calls are logged but not counted, so the window slides once traffic stops.
-    const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-    const { count, error: countError } = await admin
-      .from("tag_events")
-      .select("id", { count: "exact", head: true })
-      .eq("tag_id", tag.id)
-      .eq("event", "redeem")
-      .neq("outcome", "rate_limited")
-      .gte("created_at", since);
-    if (countError) throw new Error(`rate count failed: ${countError.code} ${countError.message}`);
+    // Atomic count-and-check in the database. Rate limited calls are still logged.
+    const { data: quota, error: quotaError } = await admin.rpc("consume_redeem_quota", {
+      p_tag_id: tag.id,
+      p_client_key: await clientKey(req, tag.id),
+      p_client_max: CLIENT_LIMIT_MAX,
+      p_tag_max: TAG_LIMIT_MAX,
+      p_window_seconds: RATE_LIMIT_WINDOW_SECONDS,
+    });
+    if (quotaError) throw new Error(`rate limit failed: ${quotaError.code} ${quotaError.message}`);
 
     let outcome: Outcome;
     let response: Response;
-    if ((count ?? 0) >= RATE_LIMIT_MAX) {
+    if (quota !== "ok") {
       outcome = "rate_limited";
       response = json(429, { error: "rate_limited" });
     } else if (tag.status === "revoked") {
