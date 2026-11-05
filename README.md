@@ -217,7 +217,7 @@ Needs no user session. The optional `X-Client-Platform` header (`ios`, `android`
 | `200` | `{ "ssid": "Guest", "password": "guest-password", "security": "wpa2" }`, with `password` set to `null` for open networks |
 | `404` | `not_found` |
 | `410` | `revoked` or `expired` |
-| `429` | `rate_limited` |
+| `429` | `rate_limited` (30 taps per client per card per 10 minutes, plus a 1000 per card ceiling) |
 | `500` | `server_error` |
 
 ### Managing cards
